@@ -1,0 +1,338 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Premium Bot UI - Admin 6969</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f0a19;
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --accent-purple: #9d50bb;
+            --accent-pink: #6e48aa;
+            --text-main: #ffffff;
+            --text-dim: rgba(255, 255, 255, 0.6);
+            --border-white: rgba(255, 255, 255, 0.1);
+            --danger: #ff4d4d;
+            --success: #00ff88;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 10% 20%, rgba(157, 80, 187, 0.15) 0%, transparent 40%),
+                              radial-gradient(circle at 90% 80%, rgba(110, 72, 170, 0.15) 0%, transparent 40%);
+            display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
+            color: var(--text-main); padding-top: 30px; overflow-x: hidden;
+        }
+
+        .container { width: 100%; max-width: 420px; padding: 20px; position: relative; z-index: 1; }
+
+        .search-container { position: relative; margin-bottom: 24px; }
+        .search-bar {
+            width: 100%; background: var(--card-bg); border: 1px solid var(--border-white);
+            border-radius: 18px; padding: 15px 15px 15px 45px; color: white; outline: none;
+            backdrop-filter: blur(10px); transition: 0.3s; font-size: 14px;
+        }
+        .search-bar:focus { border-color: var(--accent-purple); background: rgba(255,255,255,0.07); }
+        .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-dim); }
+
+        .profile-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+            backdrop-filter: blur(20px); border-radius: 24px; padding: 18px;
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px;
+            border: 1px solid var(--border-white); box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .profile-main { display: flex; align-items: center; gap: 15px; }
+        .profile-img { 
+            width: 62px; height: 62px; border-radius: 16px; overflow: hidden; 
+            border: 2px solid var(--accent-purple); cursor: default; background: #1a1425; flex-shrink: 0; 
+            position: relative; transition: 0.3s;
+        }
+        body.admin-mode .profile-img { cursor: pointer; transform: scale(1.05); border-color: var(--success); }
+        .profile-img img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .profile-info h2 { font-size: 16px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; }
+        .sub-line { font-size: 12px; color: var(--text-dim); display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+        .status-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success); }
+
+        .admin-trigger-btn { 
+            width: 44px; height: 44px; border-radius: 12px; 
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border-white); 
+            display: flex; justify-content: center; align-items: center; 
+            cursor: pointer; color: #ffcc00; transition: 0.3s;
+        }
+        body.admin-mode .admin-trigger-btn { color: var(--success); border-color: var(--success); }
+
+        .menu-list { display: flex; flex-direction: column; gap: 12px; }
+        .menu-item-wrapper { position: relative; width: 100%; }
+        .menu-btn {
+            background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border-white);
+            border-radius: 20px; padding: 14px 18px; display: flex; align-items: center;
+            justify-content: space-between; text-decoration: none; color: inherit; width: 100%; transition: 0.2s;
+        }
+        .icon-box { 
+            width: 40px; height: 40px; border-radius: 12px; display: flex; justify-content: center; align-items: center; 
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border-white); overflow: hidden; 
+            color: var(--accent-purple); font-size: 18px; 
+        }
+        .icon-box img { width: 100%; height: 100%; object-fit: cover; }
+        .btn-text { font-weight: 600; font-size: 14px; margin-left: 12px; }
+
+        .edit-trigger { 
+            position: absolute; right: 45px; top: 50%; transform: translateY(-50%); 
+            width: 32px; height: 32px; border-radius: 10px; 
+            background: var(--accent-purple); display: none; 
+            justify-content: center; align-items: center; 
+            cursor: pointer; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        body.admin-mode .edit-trigger { display: flex; }
+        body.admin-mode .menu-btn { padding-right: 85px; pointer-events: none; }
+
+        /* Modals */
+        .modal { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(15px); z-index: 2000; 
+            justify-content: center; align-items: center; padding: 20px; 
+        }
+        .modal-content { 
+            background: #161122; border: 1px solid var(--border-white); 
+            padding: 24px; border-radius: 24px; width: 100%; max-width: 360px; 
+        }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 6px; }
+        .modal-content input { 
+            width: 100%; padding: 12px; background: rgba(255,255,255,0.05); 
+            border: 1px solid var(--border-white); border-radius: 12px; color: white; outline: none; 
+        }
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-btns button { flex: 1; padding: 14px; border-radius: 12px; border: none; cursor: pointer; font-weight: 700; }
+        .save-btn { background: var(--accent-purple); color: white; }
+        .cancel-btn { background: rgba(255,255,255,0.1); color: white; }
+        .delete-btn { background: var(--danger); color: white; width: 100%; margin-top: 10px; padding: 12px; border-radius: 12px; border:none; font-weight: 700; }
+
+        .admin-badge { background: #ffcc00; color: #000; font-size: 9px; padding: 2px 6px; border-radius: 5px; font-weight: 900; display: none; }
+        body.admin-mode .admin-badge { display: inline-block; }
+
+        #loader { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); z-index: 3000; justify-content: center; align-items: center; flex-direction: column;
+        }
+        .spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--accent-purple); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="loader"><div class="spinner"></div></div>
+
+    <div class="container">
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="toolSearch" class="search-bar" placeholder="Search bots...">
+        </div>
+
+        <section class="profile-card">
+            <div class="profile-main">
+                <div class="profile-img" id="profileImgTrigger">
+                    <img id="displayImg" src="https://i.ibb.co/ycT8rJp0/ba89937e40d90a6434b3b2f224d7cf03.gif" alt="Avatar">
+                </div>
+                <div class="profile-info">
+                    <h2 id="displayName">Ariyan Ahamed <span class="admin-badge">Admin</span></h2>
+                    <div class="sub-line">
+                        <span id="displayHandle">@i143Ah</span>
+                        <span class="status-dot"></span>
+                        <span style="color: var(--success);">Active</span>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-trigger-btn" id="lockBtn">
+                <i class="fas fa-cog"></i>
+            </div>
+        </section>
+
+        <nav class="menu-list" id="botList"></nav>
+        
+        <button id="addBotBtn" class="save-btn" style="display: none; width: 100%; margin-top: 25px; border-radius: 20px; padding: 18px;" onclick="openAddModal()">
+            <i class="fas fa-plus-circle" style="margin-right: 8px;"></i> Add New Bot
+        </button>
+    </div>
+
+    <!-- Modals -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <h3>Update Profile</h3>
+            <div class="input-group"><label>Name</label><input type="text" id="inpName"></div>
+            <div class="input-group"><label>Handle (@)</label><input type="text" id="inpHandle"></div>
+            <div class="input-group"><label>Image URL</label><input type="text" id="inpImg"></div>
+            <div class="modal-btns">
+                <button class="cancel-btn" onclick="closeModal('profileModal')">Cancel</button>
+                <button class="save-btn" onclick="saveProfile()">Update</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="botModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Manage Bot</h3>
+            <input type="hidden" id="editBotId">
+            <div class="input-group"><label>Name</label><input type="text" id="botName"></div>
+            <div class="input-group"><label>Link</label><input type="text" id="botLink"></div>
+            <div class="input-group"><label>Icon (URL/Class)</label><input type="text" id="botIcon"></div>
+            <div class="modal-btns">
+                <button class="cancel-btn" onclick="closeModal('botModal')">Cancel</button>
+                <button class="save-btn" onclick="saveBot()">Save</button>
+            </div>
+            <button id="delBtn" class="delete-btn" onclick="deleteBot()">Delete</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyBGhYaY-Sn3Z6d4zJxXLoG-1o0hnIOZ7OQ",
+          authDomain: "love-tools-521da.firebaseapp.com",
+          projectId: "love-tools-521da",
+          storageBucket: "love-tools-521da.firebasestorage.app",
+          messagingSenderId: "437467140322",
+          appId: "1:437467140322:web:1c91d70db3f0c5f41acebb",
+          measurementId: "G-PY59JY9NTR"
+        };
+
+        const appId = 'love-tools-v1-prod';
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let isAdmin = false;
+        let tools = [];
+        let userProfile = { name: "Ariyan Ahamed", handle: "i143Ah", img: "https://i.ibb.co/ycT8rJp0/ba89937e40d90a6434b3b2f224d7cf03.gif" };
+
+        async function init() {
+            await signInAnonymously(auth);
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'profile'), (snap) => {
+                        if (snap.exists()) {
+                            userProfile = snap.data();
+                            updateUIProfile();
+                        } else {
+                            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'profile'), userProfile);
+                        }
+                    });
+                    onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'bots'), (snap) => {
+                        tools = [];
+                        snap.forEach(d => tools.push({ id: d.id, ...d.data() }));
+                        renderBotList();
+                    });
+                }
+            });
+        }
+
+        function updateUIProfile() {
+            document.getElementById('displayName').innerHTML = userProfile.name + ' <span class="admin-badge">Admin</span>';
+            document.getElementById('displayHandle').innerText = '@' + userProfile.handle;
+            document.getElementById('displayImg').src = userProfile.img;
+        }
+
+        window.renderBotList = () => {
+            const list = document.getElementById('botList');
+            const term = document.getElementById('toolSearch').value.toLowerCase();
+            list.innerHTML = '';
+            tools.forEach(bot => {
+                if (bot.name.toLowerCase().includes(term)) {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'menu-item-wrapper';
+                    const icon = bot.icon && bot.icon.startsWith('http') ? `<img src="${bot.icon}">` : `<i class="fas ${bot.icon || 'fa-robot'}"></i>`;
+                    wrap.innerHTML = `<a href="${bot.link}" target="_blank" class="menu-btn"><div style="display:flex;align-items:center;"><div class="icon-box">${icon}</div><span class="btn-text">${bot.name}</span></div><i class="fas fa-chevron-right" style="font-size:12px;color:var(--text-dim)"></i></a><div class="edit-trigger" onclick="openEditModal('${bot.id}')"><i class="fas fa-pencil-alt" style="color:white;font-size:12px;"></i></div>`;
+                    list.appendChild(wrap);
+                }
+            });
+        };
+
+        // PASS 6969
+        document.getElementById('lockBtn').addEventListener('click', () => {
+            if (isAdmin) {
+                isAdmin = false;
+                document.body.classList.remove('admin-mode');
+                document.getElementById('addBotBtn').style.display = 'none';
+                return;
+            }
+            const pass = prompt("Admin Password:");
+            if (pass === "6969") {
+                isAdmin = true;
+                document.body.classList.add('admin-mode');
+                document.getElementById('addBotBtn').style.display = 'block';
+            } else if (pass !== null) { alert("Wrong Password!"); }
+        });
+
+        document.getElementById('profileImgTrigger').onclick = () => {
+            if (!isAdmin) return;
+            document.getElementById('inpName').value = userProfile.name;
+            document.getElementById('inpHandle').value = userProfile.handle;
+            document.getElementById('inpImg').value = userProfile.img;
+            document.getElementById('profileModal').style.display = 'flex';
+        };
+
+        window.saveProfile = async () => {
+            toggleLoader(true);
+            const data = { name: document.getElementById('inpName').value, handle: document.getElementById('inpHandle').value.replace('@',''), img: document.getElementById('inpImg').value };
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'profile'), data);
+            closeModal('profileModal');
+            toggleLoader(false);
+        };
+
+        window.openAddModal = () => {
+            document.getElementById('modalTitle').innerText = "Add New Bot";
+            document.getElementById('editBotId').value = "";
+            ['botName', 'botLink', 'botIcon'].forEach(i => document.getElementById(i).value = "");
+            document.getElementById('delBtn').style.display = 'none';
+            document.getElementById('botModal').style.display = 'flex';
+        };
+
+        window.openEditModal = (id) => {
+            const b = tools.find(x => x.id === id);
+            if(!b) return;
+            document.getElementById('modalTitle').innerText = "Edit Bot";
+            document.getElementById('editBotId').value = id;
+            document.getElementById('botName').value = b.name;
+            document.getElementById('botLink').value = b.link;
+            document.getElementById('botIcon').value = b.icon;
+            document.getElementById('delBtn').style.display = 'block';
+            document.getElementById('botModal').style.display = 'flex';
+        };
+
+        window.saveBot = async () => {
+            const id = document.getElementById('editBotId').value || Date.now().toString();
+            const data = { name: document.getElementById('botName').value, link: document.getElementById('botLink').value, icon: document.getElementById('botIcon').value };
+            if(!data.name || !data.link) return;
+            toggleLoader(true);
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'bots', id), data);
+            closeModal('botModal');
+            toggleLoader(false);
+        };
+
+        window.deleteBot = async () => {
+            if(!confirm("Are you sure?")) return;
+            toggleLoader(true);
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'bots', document.getElementById('editBotId').value));
+            closeModal('botModal');
+            toggleLoader(false);
+        };
+
+        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+        function toggleLoader(show) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; }
+        document.getElementById('toolSearch').oninput = renderBotList;
+        init();
+    </script>
+</body>
+</html>
+
+```
